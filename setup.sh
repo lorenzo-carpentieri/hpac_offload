@@ -1,8 +1,19 @@
 #!/bin/bash
 
 prefix=$PWD/HPAC/build_compiler
-threads=$1
+threads=$2
 current_dir=$(pwd)
+
+# set cc to default 'gcc' if 'CC' is not in the environment
+if [ -z "$CC" ]; then
+  CC=gcc
+fi
+
+if [ -z "$CXX" ]; then
+  CXX=g++
+fi
+
+echo "Using CC=$CC and CXX=$CXX for HPAC build."
 
 NOCOLOR='\033[0m'
 RED='\033[0;31m'
@@ -24,7 +35,10 @@ WHITE='\033[1;37m'
 clang_bin=$prefix/bin/clang
 
 if [ ! -f $clang_bin ]; then
-  git clone --single-branch --branch hpac_offload https://github.com/LLNL/HPAC
+  if [ ! -d "HPAC" ]; then 
+    echo "HPAC not found, downloading..."
+    git clone --single-branch --branch hpac_offload https://github.com/LLNL/HPAC
+  fi
   pushd HPAC
   mkdir -p build_compiler
   pushd build_compiler
@@ -35,8 +49,8 @@ if [ ! -f $clang_bin ]; then
     -DCMAKE_BUILD_TYPE='RelWithDebInfo' \
     -DLLVM_FORCE_ENABLE_STATS='On' \
     -DLLVM_ENABLE_PROJECTS='clang' \
-    -DCMAKE_C_COMPILER=gcc \
-    -DCMAKE_CXX_COMPILER=g++ \
+    -DCMAKE_C_COMPILER=$CC \
+    -DCMAKE_CXX_COMPILER=$CXX \
     -DLLVM_ENABLE_RUNTIMES='openmp' \
     -DLLVM_OPTIMIZED_TABLEGEN='On' \
     -DCLANG_BUILD_EXAMPLES='On' \
