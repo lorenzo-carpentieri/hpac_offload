@@ -34,10 +34,18 @@ WHITE='\033[1;37m'
 
 clang_bin=$prefix/bin/clang
 
+if [ ! -d "artifact_files" ]; then
+  wget https://zenodo.org/record/8200217/files/hpac_offload_artifact.zip
+  unzip hpac_offload_artifact.zip -d artifact_files
+  rm hpac_offload_artifact.zip
+  mv artifact_files/HPAC .
+  mv artifact_files/input_data .
+fi
+
 if [ ! -f $clang_bin ]; then
-  if [ ! -d "HPAC" ]; then 
-    echo "HPAC not found, downloading..."
-    git clone --single-branch --branch hpac_offload https://github.com/LLNL/HPAC
+  if [ "$1" == "--git" ]; then
+      echo "Downloading HPAC from git.."
+      git clone --single-branch --branch hpac_offload https://github.com/LLNL/HPAC
   fi
   pushd HPAC
   mkdir -p build_compiler
@@ -91,16 +99,10 @@ if [ -d "benchmarks/input_data" ]; then
   echo "Directory benchmarks/input_data already exists. Skipping download and unzip."
 else
   # Download the archive using wget
-  wget https://uofi.box.com/shared/static/7p8eb0ppw6zhtdr7krhiw9kat52lmwez.gz
-
-  # Unzip the archive using tar
-  tar -xzf 7p8eb0ppw6zhtdr7krhiw9kat52lmwez.gz
-
   # Create the 'benchmarks' directory if it doesn't exist
   mkdir -p benchmarks
 
   # Move the 'input_data' directory to the 'benchmarks' directory
   mv input_data benchmarks/
-  rm 7p8eb0ppw6zhtdr7krhiw9kat52lmwez.gz
 fi
 
