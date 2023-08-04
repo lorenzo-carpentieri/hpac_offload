@@ -45,6 +45,7 @@ fi
 if [ ! -f $clang_bin ]; then
   if [ "$1" == "--git" ]; then
       echo "Downloading HPAC from git.."
+      rm -rf HPAC
       git clone --single-branch --branch hpac_offload https://github.com/LLNL/HPAC
   fi
   pushd HPAC
