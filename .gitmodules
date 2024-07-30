@@ -1,0 +1,3 @@
+[submodule "hpac_harness"]
+	path = hpac_harness
+	url = https://github.com/lorenzo-carpentieri/hpac_harness.git
