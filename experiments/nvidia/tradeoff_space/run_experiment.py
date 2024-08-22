@@ -29,6 +29,7 @@ def main(technique, config_file, number):
     exp_cfg_name = f'config_{technique}'
     base_dir = Path(__file__).resolve().parent.parent.parent.parent
     bench_cfg = modify_paths(bench_cfg, base_dir)
+    
     cfg = modify_paths(cfg, base_dir)
     run_cfg = modify_paths(run_cfg, base_dir)
     exp_cfg = pd.read_csv(run_cfg[exp_cfg_name])
@@ -138,14 +139,16 @@ def build_hpac(destination, cfg, _others = None):
 def modify_paths(value, base_dir):
     if isinstance(value, str):
         path = Path(value)
-        if not path.is_absolute() and Path(base_dir, path).exists():
+        # .bmp check to modify also the image path for the output images
+        if (not path.is_absolute() and Path(base_dir, path).exists() ) or ".bmp" in value:
             modified_path = Path(base_dir, path).resolve()
-            if modified_path.exists():
+            if modified_path.exists() or ".bmp" in value:
                 return str(modified_path)
         return value
     elif isinstance(value, dict):
         for key, val in value.items():
             value[key] = modify_paths(val, base_dir)
+    
     return value
 
 if __name__ == '__main__':
