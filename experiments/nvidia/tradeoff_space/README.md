@@ -47,10 +47,12 @@ To run an experiment, use the `run_experiment.py` script with the following opti
 
 Example usage:
 
+The config.yaml file contains the path to the generated file with all configuration for the specified techinique
 ```
-python3 run_experiment.py --config_file config_all.yaml --number 6716
+python3 gen_experiments.py --input config_leukocyte.yaml --output experiment_config/experiments_iact_leukocyte.csv --technique iact
+python3 run_experiment.py --config_file config_leukocyte.yaml  --number 2  --technique iact
 ```
-
+s
 This command will run the experiment with the specified number from the corresponding configuration file. The results of the experiment will be written to a table in the `results_all.sqlite3` database.
 
 ## Creating the Database

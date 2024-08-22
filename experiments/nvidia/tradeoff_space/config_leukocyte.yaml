@@ -1,0 +1,78 @@
+# ALL paths should be relative to the base directory of the repository
+---
+run:
+    hpac_basedir: "/home/lcarpent/approx_workspace/HPAC"
+    # Note: this is relative to 'hpac_basedir'
+    hpac_build_dir: "build_compiler"
+    temporary_base_dir: "./"
+    hpac_package_version: "16"
+    config_taf: "experiments/nvidia/tradeoff_space/experiment_config/experiments_taf_leukocyte.csv"
+    config_iact: "experiments/nvidia/tradeoff_space/experiment_config/experiments_iact_leukocyte.csv"
+    config_perfo: "experiments/nvidia/tradeoff_space/experiment_config/experiments_perfo_leukocyte.csv"
+    output_directory: "./"
+    database_file: "experiments/nvidia/tradeoff_space/results_all.sqlite3"
+    device_stats_enabled: 0
+    warp_size: 32
+    # change for your platform
+    num_cpu_threads: 44
+
+benchmark:
+  leukocyte:
+    overrides:
+      items_per_thread: [1]
+      trials: [8]
+    executable_name: "leukocyte"
+    executable_arguments:
+      # 36 cells, create one block for each cell
+      num_cells: 36
+      num_frames: 20
+    approx_arguments:
+      input_num_items: 1
+      output_num_items: 1
+    regions:
+      perfo: ['IMGVF_perfo']
+      iact: ["IMGVF_comp_in"]
+      taf: ["IMGVF_comp_out"]
+    input_data: "benchmarks/input_data/leukocyte/testfile.avi"
+    benchmark_directory: "benchmarks/leukocyte"
+    exact_results: "benchmarks/leukocyte/result.txt"
+    output_filename: "result.txt"
+
+
+gen:
+    trials: 3
+    items_per_thread: [1]
+    blocksize: [256]
+    taf:
+      hierarchy: ["thread", "warp"]
+      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
+      threshold: [0.3, 0.6, 0.9, 1.2, 1.5, 3.0, 5.0, 20]
+      history_size: [1,2,3,4,5]
+      prediction_size: [2,4,8,16,32,128,256, 512]
+      taf_width: [1]
+    iact:
+      hierarchy: ["thread", "warp"]
+      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
+      table_size: [1, 2, 4, 8]
+      threshold: [0.1, 0.3, 0.5, 0.7, 0.9, 3.0, 5.0, 20]
+      tables_per_warp: [1,2,16,32]
+      replacement_policy: ['REPLACEMENT_ROUND_ROBIN']
+      blocksize: 256
+
+    perfo:
+      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
+      # SMALL, LARGE, INI, FINI
+      perfo_types: ['small', 'large', 'ini', 'fini']
+      perfo_skip: [2,4,8,16,32,64]
+      perfo_percent: [10, 20, 30, 40, 50, 60, 70, 80, 90]
+      blocksize: 256
+
+    perfo:
+      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
+      # SMALL, LARGE, INI, FINI
+      perfo_types: ['small', 'large', 'ini', 'fini']
+      perfo_skip: [2,4,8,16,32,64]
+      perfo_percent: [10, 20, 30, 40, 50, 60, 70, 80, 90]
+      blocksize: 256
+
+  
