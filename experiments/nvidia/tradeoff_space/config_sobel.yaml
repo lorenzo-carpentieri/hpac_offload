@@ -33,6 +33,7 @@ benchmark:
       iact: ["IMGVF_comp_in"]
       taf: ["IMGVF_comp_out"]
     img: "benchmarks/sobel/Brommy.bmp"
+    imgout: "benchmarks/sobel/Brommy_s.bmp"
     benchmark_directory: "benchmarks/sobel"
     exact_results: "benchmarks/sobel/result.txt"
 gen:
