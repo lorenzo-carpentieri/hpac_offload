@@ -44,12 +44,13 @@ static bool compare(const float *refData, const float *data,
 
 int main(int argc, char * argv[])
 {
-  if (argc != 3) {
-    printf("Usage: %s <path to file> <repeat>\n", argv[0]);
+  if (argc != 4) {
+    printf("Usage: %s <path to input bmp img> <out img> <iters>\n", argv[0]);
     return 1;
   }
   const char* filePath = argv[1];
-  const int iterations = atoi(argv[2]);
+  const char* fileOutPath = argv[2];
+  const int iterations = atoi(argv[3]);
   // squared image
   const int width = 3072;
   const int height = width;
@@ -168,7 +169,7 @@ int main(int argc, char * argv[])
       out_img[i]= convert_float4(outputImageData[i]);
   }
   
-  // save_bitmap("./out.bmp", size, out_img);
+  save_bitmap(fileOutPath, size, out_img);
   // compare the results and see if they match
   if(compare(outputReference, outputDevice, imageSize))
     printf("PASS\n");
