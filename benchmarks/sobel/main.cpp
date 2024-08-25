@@ -50,14 +50,13 @@ int main(int argc, char * argv[])
   }
   const char* filePath = argv[1];
   const char* fileOutPath = argv[2];
-  const int iterations = atoi(argv[3]);
   // squared image
-  const int width = 3072;
-  const int height = width;
-  const int size = width;
+  int width = 3072;
+  int height = width;
+  int size = width;
   
-  const int pixelSize = sizeof(uchar4);
-  const int imageSize = width * height * pixelSize;
+   int pixelSize = sizeof(uchar4);
+   int imageSize = width * height * pixelSize;
 
   // load image
   std::vector<float4> img;
@@ -72,8 +71,8 @@ int main(int argc, char * argv[])
   uchar4 * outputImageData = out_img_vec.data();
 
   uchar4 * inputImageData = in_img_vec.data();
-
-  // convert float data to uchar
+  
+  // convert float4 data to uchar4
   for (int i = 0; i < size*size; i++){
       in_img_vec[i]= convert_uchar4(img[i]);
   }
@@ -84,50 +83,53 @@ int main(int argc, char * argv[])
   uchar4 *verificationOutput = ver_output_img.data();
   
   
-  printf("Executing kernel for %d iterations", iterations);
-  printf("-------------------------------------------\n");
 
-  #pragma omp target data map (to: inputImageData[0:width*height]) \
+  auto start = std::chrono::steady_clock::now();
+   #pragma omp target data map (to: inputImageData[0:width*height]) \
                           map(tofrom: outputImageData[0:width*height])
   {
-    auto start = std::chrono::steady_clock::now();
+    int y, x, i ;
+    //@APPROX LABEL("sobel_perf") APPROX_TECH(lPerfo | sPerfo)
+    #pragma omp target teams distribute parallel for thread_limit(256)
+    for (i = 0; i < (height * width); i++){
+        // Calculate y and x from the single index i
+        y = i / width; // row
+        x = i % width; // col
+        y+=1;
+        x+=1;
+        // Skip the boundary pixels
+        if (x-1 < 0 || x+1 >= width || y - 1 < 0 || y+1 >= height) continue;
 
-    for(int i = 0; i < iterations; i++)
-    {
-      #pragma omp target teams distribute parallel for collapse(2) thread_limit(256)
-      for (uint y = 1; y < height - 1; y++)
-        for (uint x = 1; x < width - 1; x++) 
-        {
-          int c = x + y * width;
-          float4 i00 = convert_float4(inputImageData[c - 1 - width]);
-          float4 i01 = convert_float4(inputImageData[c - width]);
-          float4 i02 = convert_float4(inputImageData[c + 1 - width]);
+        int c = x + y * width;
+        float4 i00 = convert_float4(inputImageData[c - 1 - width]);
+        float4 i01 = convert_float4(inputImageData[c - width]);
+        float4 i02 = convert_float4(inputImageData[c + 1 - width]);
 
-          float4 i10 = convert_float4(inputImageData[c - 1]);
-          float4 i12 = convert_float4(inputImageData[c + 1]);
+        float4 i10 = convert_float4(inputImageData[c - 1]);
+        float4 i12 = convert_float4(inputImageData[c + 1]);
 
-          float4 i20 = convert_float4(inputImageData[c - 1 + width]);
-          float4 i21 = convert_float4(inputImageData[c + width]);
-          float4 i22 = convert_float4(inputImageData[c + 1 + width]);
+        float4 i20 = convert_float4(inputImageData[c - 1 + width]);
+        float4 i21 = convert_float4(inputImageData[c + width]);
+        float4 i22 = convert_float4(inputImageData[c + 1 + width]);
 
-          const float4 two = {2.f, 2.f, 2.f, 2.f};
+        const float4 two = {2.f, 2.f, 2.f, 2.f};
 
-          float4 Gx = i00 + two * i10 + i20 - i02  - two * i12 - i22;
+        float4 Gx = i00 + two * i10 + i20 - i02  - two * i12 - i22;
 
-          float4 Gy = i00 - i20  + two * i01 - two * i21 + i02  -  i22;
+        float4 Gy = i00 - i20  + two * i01 - two * i21 + i02  -  i22;
 
-          /* taking root of sums of squares of Gx and Gy */
-          outputImageData[c] = convert_uchar4({sqrtf(Gx.x*Gx.x + Gy.x*Gy.x)/2.f,
-                                               sqrtf(Gx.y*Gx.y + Gy.y*Gy.y)/2.f,
-                                               sqrtf(Gx.z*Gx.z + Gy.z*Gy.z)/2.f,
-                                               sqrtf(Gx.w*Gx.w + Gy.w*Gy.w)/2.f});
+        /* taking root of sums of squares of Gx and Gy */
+        outputImageData[c] = convert_uchar4({sqrtf(Gx.x*Gx.x + Gy.x*Gy.x)/2.f,
+                                             sqrtf(Gx.y*Gx.y + Gy.y*Gy.y)/2.f,
+                                             sqrtf(Gx.z*Gx.z + Gy.z*Gy.z)/2.f,
+                                             sqrtf(Gx.w*Gx.w + Gy.w*Gy.w)/2.f});
       }
     }
+  
 
-    auto end = std::chrono::steady_clock::now();
-    auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    printf("Average kernel execution time: %f (s)\n", (time * 1e-9f) / iterations);
-  }
+  auto end = std::chrono::steady_clock::now();
+  auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+  printf("Average kernel execution time: %f (s)\n", (time * 1e-9f));
 
   // reference implementation
   reference(verificationOutput, inputImageData, width, height, pixelSize);
@@ -154,13 +156,11 @@ int main(int argc, char * argv[])
     outputReference[i * 4 + 2] = verificationOutput[i].z;
     outputReference[i * 4 + 3] = verificationOutput[i].w;
   }
-  // Create an SDKBitMap object for the output image
-  // Save the output image to a file
-
   // for(int i = 0; i < height*width;i++){
   //   std::cout<< static_cast<int>(outputImageData[i].x) << " "<<  static_cast<int>(outputImageData[i].y)<< " "<< static_cast<int>(outputImageData[i].z) << std::endl;
   // }
   
+  // Save the output image to a file
   // the save bitmap work with float4 so I have to convert the data
   std::vector<float4> out_img;
   out_img.resize(width*height);
@@ -168,7 +168,6 @@ int main(int argc, char * argv[])
   for (int i = 0; i < size*size; i++){
       out_img[i]= convert_float4(outputImageData[i]);
   }
-  
   save_bitmap(fileOutPath, size, out_img);
   // compare the results and see if they match
   if(compare(outputReference, outputDevice, imageSize))
@@ -176,10 +175,5 @@ int main(int argc, char * argv[])
   else
     printf("FAIL\n");
 
-  // free(outputDevice);
-  // free(outputReference);
-  // free(verificationOutput);
-  // free(inputImageData);
-  // free(outputImageData);
   return 0;
 }
