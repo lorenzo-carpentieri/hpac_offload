@@ -1,0 +1,67 @@
+# ALL paths should be relative to the base directory of the repository
+---
+run:
+    hpac_basedir: "/home/lcarpent/approx_workspace/HPAC"
+    # Note: this is relative to 'hpac_basedir'
+    hpac_build_dir: "build_compiler"
+    temporary_base_dir: "./"
+    hpac_package_version: "16"
+    config_taf: "experiments/nvidia/tradeoff_space/experiment_config/experiments_taf_tv.csv"
+    config_iact: "experiments/nvidia/tradeoff_space/experiment_config/experiments_iact_tv.csv"
+    config_perfo: "experiments/nvidia/tradeoff_space/experiment_config/experiments_perfo_tv.csv"
+    output_directory: "./"
+    database_file: "experiments/nvidia/tradeoff_space/tv_db.sqlite3"
+    device_stats_enabled: 0
+    warp_size: 32
+    # change for your platform
+    num_cpu_threads: 44
+
+benchmark:
+  tv:
+    overrides:
+      # define the number of execution of each benchmark
+      trials: 1
+    executable_name: "tv"
+    executable_arguments:
+      reps: "1"
+    approx_arguments:
+      input_num_items: 1
+      output_num_items: 1
+    regions:
+      perfo: ['tv_perf']
+      iact: ["entire_memo_in"]
+      taf: ["entire_memo_out"]
+    img: "benchmarks/tv/Brommy.bmp"
+    imgout: "benchmarks/tv/Brommy_s.bmp"
+    benchmark_directory: "benchmarks/tv"
+    exact_results: "benchmarks/tv/result.txt"
+gen:
+    trials: 1
+    items_per_thread: [1]
+    blocksize: [256]
+    taf:
+      hierarchy: ["thread", "warp"]
+      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
+      threshold: [0.3, 0.6, 0.9, 1.2, 1.5, 3.0, 5.0, 20]
+      history_size: [1,2,3,4,5]
+      prediction_size: [2,4,8,16,32,128,256, 512]
+      taf_width: [1]
+    iact:
+      hierarchy: ["thread", "warp"]
+      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
+      table_size: [1, 2, 4, 8]
+      threshold: [0.1, 0.3, 0.5, 0.7, 0.9, 3.0, 5.0, 20]
+      tables_per_warp: [1,2,16,32]
+      replacement_policy: ['REPLACEMENT_ROUND_ROBIN']
+      blocksize: 256
+    perfo:
+      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
+      # SMALL, LARGE, INI, FINI
+      perfo_types: ['small', 'large', 'ini', 'fini']
+      perfo_skip: [2,4,8,16,32,64]
+      perfo_percent: [10, 20, 30, 40, 50, 60, 70, 80, 90]
+      blocksize: 256
+
+
+
+  
