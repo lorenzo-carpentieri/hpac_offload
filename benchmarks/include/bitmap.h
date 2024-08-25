@@ -403,4 +403,55 @@ inline void save_bitmap(string filename, int size, const std::vector<float4>& ou
   output_image.save(filename);
 }
 
+
+// Input: image and size of height or width
+template<class vec_type, class var_type>
+std::vector<var_type> rgbToGrayScale(std::vector<vec_type> img, size_t size){
+  float gray_scale[3] = {0.299, 0.587, 0.114};
+  std::vector<var_type> gray_scale_img(size*size);
+  for(int i = 0; i < size; i++)
+    for(int j = 0; j < size; j++){
+      gray_scale_img[i*size + j]+= gray_scale[0] * static_cast<int>(img[i*size + j].x);
+      gray_scale_img[i*size + j]+= gray_scale[1] * static_cast<int>(img[i*size + j].y);
+      gray_scale_img[i*size + j]+= gray_scale[2] * static_cast<int>(img[i*size + j].z);
+    }
+  
+  for(int i = 0; i < size*size; i++)
+    gray_scale_img[i] = static_cast<int>(gray_scale_img[i]);
+  return gray_scale_img;
+}
+
+
+// Input: image and size of height or width
+template<class vec_type, class var_type>
+std::vector<vec_type> grayScaleToRgb(std::vector<var_type> img, size_t size){
+  std::vector<vec_type> rgb_img(size*size);
+  for(int i = 0; i < size; i++)
+    for(int j = 0; j < size; j++){
+      if(img[i*size+j]>255){
+        rgb_img[i*size + j].x = 255;
+        rgb_img[i*size + j].y = 255;
+        rgb_img[i*size + j].z = 255;
+      }
+      else if(img[i*size+j]<0){
+        rgb_img[i*size + j].x = 0;
+        rgb_img[i*size + j].y = 0;
+        rgb_img[i*size + j].z = 0;
+      }
+      else{
+        rgb_img[i*size + j].x = img[i*size+j];
+        rgb_img[i*size + j].y = img[i*size+j];
+        rgb_img[i*size + j].z = img[i*size+j];
+      }
+    }
+
+  // for(int i = 0; i < size*size; i++){
+  //   rgb_img[i].x /= 255;
+  //   rgb_img[i].y /= 255;
+  //   rgb_img[i].z /= 255;
+  // } 
+  
+  return rgb_img;
+}
+
 #endif
