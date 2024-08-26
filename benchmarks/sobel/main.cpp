@@ -44,8 +44,8 @@ static bool compare(const float *refData, const float *data,
 
 int main(int argc, char * argv[])
 {
-  if (argc != 4) {
-    printf("Usage: %s <path to input bmp img> <out img> <iters>\n", argv[0]);
+  if (argc != 3) {
+    printf("Usage: %s <path to input bmp img> <out img>\n", argv[0]);
     return 1;
   }
   const char* filePath = argv[1];
