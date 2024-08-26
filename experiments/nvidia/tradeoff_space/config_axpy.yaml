@@ -20,7 +20,7 @@ benchmark:
     # benchmark-specific trials can override
   axpy:
     overrides:
-      trials: 8
+      trials: 1
     executable_name: "axpy"
     executable_arguments: ""
     approx_arguments:
@@ -31,8 +31,8 @@ benchmark:
         input_num_items: 1
         output_num_items: 1
     regions:
-      perfo: ['bs_perfo']
-      iact: ["entire_memo"]
+      perfo: ['axpy_perfo']
+      iact: ["axpy_in"]
       taf: ["entire_memo_out"]
     input_data: ""
     benchmark_directory: "benchmarks/axpy"
@@ -40,7 +40,7 @@ benchmark:
     output_filename: "approx.out"
  
 gen:
-    trials: 3
+    trials: 1
     items_per_thread: [1]
     blocksize: [256]
     taf:
@@ -57,14 +57,6 @@ gen:
       threshold: [0.1, 0.3, 0.5, 0.7, 0.9, 3.0, 5.0, 20]
       tables_per_warp: [1,2,16,32]
       replacement_policy: ['REPLACEMENT_ROUND_ROBIN']
-      blocksize: 256
-
-    perfo:
-      items_per_thread: [8, 16, 32, 64, 128, 256, 512]
-      # SMALL, LARGE, INI, FINI
-      perfo_types: ['small', 'large', 'ini', 'fini']
-      perfo_skip: [2,4,8,16,32,64]
-      perfo_percent: [10, 20, 30, 40, 50, 60, 70, 80, 90]
       blocksize: 256
 
     perfo:
